@@ -1,0 +1,178 @@
+import 'package:flutter/material.dart';
+import 'package:tracker_app/models/expense.dart';
+import 'package:tracker_app/widgets/expense_chart.dart';
+
+class TransactionsScreen extends StatefulWidget {
+  final List<Expense> incomes;
+  final List<Expense> expenses;
+
+  const TransactionsScreen({super.key, this.incomes = const [], this.expenses = const []});
+
+  @override
+  State<TransactionsScreen> createState() => _TransactionsScreenState();
+}
+
+class _TransactionsScreenState extends State<TransactionsScreen> {
+  // 0 = Income, 1 = Expenses
+  int _selectedSegment = 1;
+
+  // Local UI state
+
+  @override
+  Widget build(BuildContext context) {
+    final expenses = widget.expenses;
+    final incomes = widget.incomes;
+    final shownList = _selectedSegment == 0 ? incomes : expenses;
+    final totalAmount = shownList.fold<double>(0, (s, e) => s + e.amount);
+
+    // Build a simple transaction list for the list view (no dates stored currently)
+    final List<_Tx> txList = [
+      // incomes as positive
+      ...incomes.map((e) => _Tx(title: e.category, amount: e.amount, date: 'Today', category: e.category)),
+      // expenses as negative amounts
+      ...expenses.map((e) => _Tx(title: e.category, amount: -e.amount, date: 'Today', category: e.category)),
+    ];
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF6F5FB),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 18, 16, 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Transactions', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10)),
+                    child: const Icon(Icons.tune, size: 18),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+
+              // Segmented control (Income / Expenses)
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => setState(() => _selectedSegment = 0),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          decoration: BoxDecoration(
+                            color: _selectedSegment == 0 ? Colors.white : Colors.transparent,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Center(child: Text('Income', style: TextStyle(color: _selectedSegment == 0 ? Colors.black : Colors.grey))),
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => setState(() => _selectedSegment = 1),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 10),
+                          decoration: BoxDecoration(
+                            gradient: _selectedSegment == 1
+                                ? const LinearGradient(colors: [Color(0xFF00B2E7), Color(0xFFE064F7)])
+                                : null,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Center(child: Text('Expenses', style: TextStyle(color: _selectedSegment == 1 ? Colors.white : Colors.grey))),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 16),
+
+              // Chart card with total
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14)),
+                child: Column(
+                  children: [
+                    Text('01 Jan 2021 - 01 April 2021', style: TextStyle(color: Colors.grey[600])),
+                    const SizedBox(height: 8),
+                    Text(( _selectedSegment == 0 ? '\$' : '\$') + totalAmount.toStringAsFixed(2), style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 12),
+                    // thinner chart area
+                    SizedBox(height: 110, child: ExpenseChart(expenses: shownList)),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 14),
+
+              // Transactions grouped by date
+              Expanded(
+                child: ListView(
+                  children: [
+                    const SizedBox(height: 6),
+                    const Text('Today', style: TextStyle(color: Colors.grey)),
+                    const SizedBox(height: 8),
+                    ...txList.map((t) => _txCard(t, context)),
+                    const SizedBox(height: 24),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _txCard(_Tx tx, BuildContext context) {
+    final meta = _categoryMeta(tx.category);
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+      child: ListTile(
+        leading: CircleAvatar(backgroundColor: meta['color'] as Color, child: Icon(meta['icon'] as IconData, color: Colors.white)),
+        title: Text(tx.title, style: const TextStyle(fontWeight: FontWeight.w600)),
+        subtitle: Text(tx.date, style: const TextStyle(color: Colors.grey)),
+        trailing: Text((tx.amount < 0 ? '-' : '+') + '\$${tx.amount.abs().toStringAsFixed(0)}', style: TextStyle(color: tx.amount < 0 ? Colors.red : Colors.green, fontWeight: FontWeight.bold)),
+      ),
+    );
+  }
+}
+
+class _Tx {
+  final String title;
+  final double amount;
+  final String date;
+  final String category;
+
+  const _Tx({required this.title, required this.amount, required this.date, required this.category});
+}
+
+Map<String, Object> _categoryMeta(String category) {
+  switch (category.toLowerCase()) {
+    case 'housing':
+    case 'home rent':
+      return {'icon': Icons.home, 'color': const Color(0xFFFFB74D)};
+    case 'pet':
+    case 'pet groom':
+      return {'icon': Icons.pets, 'color': const Color(0xFF42A5F5)};
+    case 'utilities':
+    case 'recharge':
+      return {'icon': Icons.phone_iphone, 'color': const Color(0xFF66BB6A)};
+    case 'income':
+      return {'icon': Icons.attach_money, 'color': const Color(0xFF00B2E7)};
+    default:
+      return {'icon': Icons.receipt_long, 'color': Colors.grey};
+  }
+}
+
+
