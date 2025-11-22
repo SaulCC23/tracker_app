@@ -13,18 +13,20 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
+  bool _isFabHovered = false;
 
   final List<Expense> _incomes = [];
   final List<Expense> _expenses = [];
 
   List<Widget> get _screens => [
-        HomeScreen(incomes: _incomes, expenses: _expenses),
-        TransactionsScreen(incomes: _incomes, expenses: _expenses),
-      ];
+    HomeScreen(incomes: _incomes, expenses: _expenses),
+    TransactionsScreen(incomes: _incomes, expenses: _expenses),
+  ];
 
   @override
   Widget build(BuildContext context) {
-    final primary = Theme.of(context).colorScheme.primary;
+    // Color vibrante acorde al gradiente del FAB (Purple)
+    final navColor = const Color(0xFFE064F7);
 
     return Scaffold(
       extendBody: true,
@@ -52,31 +54,54 @@ class _MainScreenState extends State<MainScreen> {
                   _incomes.add(e);
                 }
               });
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${isExpense ? 'Cargo' : 'Abono'} saved: ${e.category} \$${e.amount.toStringAsFixed(2)}')));
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    '${isExpense ? 'Cargo' : 'Abono'} saved: ${e.category} \$${e.amount.toStringAsFixed(2)}',
+                  ),
+                ),
+              );
             }
           }
         },
         backgroundColor: Colors.transparent,
         elevation: 0,
-        child: Container(
-          width: 64,
-          height: 64,
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [Color(0xFFE064F7), Color(0xFFFF8D6C)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            shape: BoxShape.circle,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.18),
-                blurRadius: 10,
-                offset: const Offset(0, 6),
+        hoverElevation: 0,
+        focusElevation: 0,
+        highlightElevation: 0,
+        hoverColor: Colors.transparent,
+        splashColor: Colors.transparent,
+        focusColor: Colors.transparent,
+        child: MouseRegion(
+          onEnter: (_) => setState(() => _isFabHovered = true),
+          onExit: (_) => setState(() => _isFabHovered = false),
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            transform: Matrix4.identity()..scale(_isFabHovered ? 1.1 : 1.0),
+            transformAlignment: Alignment.center,
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFFE064F7), Color(0xFFFF8D6C)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-            ],
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: _isFabHovered
+                      ? const Color(0xFFE064F7).withOpacity(0.4)
+                      : Colors.black.withOpacity(0.18),
+                  blurRadius: _isFabHovered ? 12 : 10,
+                  offset: _isFabHovered
+                      ? const Offset(0, 8)
+                      : const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: const Icon(Icons.add, color: Colors.white, size: 28),
           ),
-          child: const Icon(Icons.add, color: Colors.white, size: 28),
         ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
@@ -97,16 +122,15 @@ class _MainScreenState extends State<MainScreen> {
                     onTap: () => setState(() => _currentIndex = 0),
                     child: _NavItem(
                       icon: Icons.home,
-                      label: 'Inicio',
                       selected: _currentIndex == 0,
-                      color: primary,
-                          verticalPadding: 4,
+                      color: navColor,
+                      verticalPadding: 4,
                     ),
                   ),
                 ),
 
                 // Spacer for FAB
-                    const SizedBox(width: 72),
+                const SizedBox(width: 72),
 
                 // Right: Apps (shows Transactions)
                 Expanded(
@@ -114,10 +138,9 @@ class _MainScreenState extends State<MainScreen> {
                     onTap: () => setState(() => _currentIndex = 1),
                     child: _NavItem(
                       icon: Icons.show_chart,
-                      label: 'Apps',
                       selected: _currentIndex == 1,
-                      color: primary,
-                          verticalPadding: 4,
+                      color: navColor,
+                      verticalPadding: 4,
                     ),
                   ),
                 ),
@@ -130,38 +153,72 @@ class _MainScreenState extends State<MainScreen> {
   }
 }
 
-class _NavItem extends StatelessWidget {
+class _NavItem extends StatefulWidget {
   final IconData icon;
-  final String label;
   final bool selected;
   final Color color;
-
   final double verticalPadding;
 
-  const _NavItem({required this.icon, required this.label, required this.selected, required this.color, this.verticalPadding = 6});
+  const _NavItem({
+    required this.icon,
+    required this.selected,
+    required this.color,
+    this.verticalPadding = 6,
+  });
+
+  @override
+  State<_NavItem> createState() => _NavItemState();
+}
+
+class _NavItemState extends State<_NavItem> {
+  bool _isHovered = false;
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 250),
-      padding: EdgeInsets.symmetric(vertical: verticalPadding),
-      decoration: BoxDecoration(
-        color: selected ? color.withOpacity(0.06) : Colors.transparent,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          TweenAnimationBuilder<double>(
-            tween: Tween(begin: selected ? 1.15 : 1.0, end: selected ? 1.15 : 1.0),
-            duration: const Duration(milliseconds: 250),
-            builder: (context, scale, child) => Transform.scale(scale: scale, child: child),
-            child: Icon(icon, color: selected ? color : Colors.grey[600]),
-          ),
-          const SizedBox(height: 6),
-          Text(label, style: TextStyle(fontSize: 12, color: selected ? color : Colors.grey[600])),
-        ],
+    final isSelectedOrHovered = widget.selected || _isHovered;
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: EdgeInsets.symmetric(vertical: widget.verticalPadding),
+        decoration: BoxDecoration(
+          color: widget.selected
+              ? widget.color.withOpacity(0.12)
+              : _isHovered
+              ? widget.color.withOpacity(0.05)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            TweenAnimationBuilder<double>(
+              tween: Tween(
+                begin: widget.selected ? 1.15 : 1.0,
+                end: widget.selected ? 1.15 : (_isHovered ? 1.1 : 1.0),
+              ),
+              duration: const Duration(milliseconds: 200),
+              builder: (context, scale, child) =>
+                  Transform.scale(scale: scale, child: child),
+              child: Icon(
+                widget.icon,
+                color: isSelectedOrHovered ? widget.color : Colors.grey[600],
+                shadows: isSelectedOrHovered
+                    ? [
+                        Shadow(
+                          color: widget.color.withOpacity(0.4),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ]
+                    : null,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

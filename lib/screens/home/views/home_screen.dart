@@ -5,11 +5,14 @@ class HomeScreen extends StatelessWidget {
   final List<Expense> incomes;
   final List<Expense> expenses;
 
-  const HomeScreen({super.key, this.incomes = const [], this.expenses = const []});
+  const HomeScreen({
+    super.key,
+    this.incomes = const [],
+    this.expenses = const [],
+  });
 
   @override
   Widget build(BuildContext context) {
-    // Use passed lists; fallback to small sample if empty
     final sampleExpenses = expenses.isNotEmpty
         ? expenses
         : [
@@ -20,12 +23,13 @@ class HomeScreen extends StatelessWidget {
 
     final sampleIncomes = incomes.isNotEmpty
         ? incomes
-        : [
-            Expense(category: 'Salary', amount: 2500),
-          ];
+        : [Expense(category: 'Salary', amount: 2500)];
 
     final totalIncome = sampleIncomes.fold<double>(0, (s, e) => s + e.amount);
-    final totalExpenses = sampleExpenses.fold<double>(0, (s, e) => s + e.amount);
+    final totalExpenses = sampleExpenses.fold<double>(
+      0,
+      (s, e) => s + e.amount,
+    );
     final totalBalance = totalIncome - totalExpenses;
 
     return Scaffold(
@@ -39,20 +43,36 @@ class HomeScreen extends StatelessWidget {
               // Header with avatar
               Row(
                 children: [
-                  const CircleAvatar(radius: 20, backgroundImage: null, child: Icon(Icons.person)),
+                  const CircleAvatar(
+                    radius: 20,
+                    backgroundImage: null,
+                    child: Icon(Icons.person),
+                  ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: const [
-                        Text('Welcome!', style: TextStyle(color: Colors.grey, fontSize: 12)),
+                        Text(
+                          'Welcome!',
+                          style: TextStyle(color: Colors.grey, fontSize: 12),
+                        ),
                         SizedBox(height: 4),
-                        Text('John Doe', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                        Text(
+                          'John Doe',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ],
                     ),
                   ),
                   Container(
-                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10)),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                     padding: const EdgeInsets.all(8),
                     child: const Icon(Icons.settings, size: 18),
                   ),
@@ -63,30 +83,61 @@ class HomeScreen extends StatelessWidget {
               // Balance card (centered like mock)
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 20),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 18,
+                  horizontal: 20,
+                ),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF00B2E7), Color(0xFFE064F7), Color(0xFFFF8D6C)],
+                    colors: [
+                      Color(0xFF00B2E7),
+                      Color(0xFFE064F7),
+                      Color(0xFFFF8D6C),
+                    ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   boxShadow: [
-                    const BoxShadow(color: Color.fromRGBO(0, 0, 0, 0.06), blurRadius: 12, offset: Offset(0, 6)),
+                    const BoxShadow(
+                      color: Color.fromRGBO(0, 0, 0, 0.06),
+                      blurRadius: 12,
+                      offset: Offset(0, 6),
+                    ),
                   ],
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    const Text('Total Balance', style: TextStyle(color: Colors.white70)),
+                    const Text(
+                      'Total Balance',
+                      style: TextStyle(color: Colors.white70),
+                    ),
                     const SizedBox(height: 8),
-                    Text('\$${totalBalance.toStringAsFixed(2)}', style: const TextStyle(color: Colors.white, fontSize: 34, fontWeight: FontWeight.bold)),
+                    Text(
+                      '\$${totalBalance.toStringAsFixed(2)}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 34,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     const SizedBox(height: 14),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        _SmallStat(icon: Icons.arrow_upward, label: 'Income', value: '\$${totalIncome.toStringAsFixed(2)}'),
-                        _SmallStat(icon: Icons.arrow_downward, label: 'Expenses', value: '\$${totalExpenses.toStringAsFixed(2)}'),
+                        _SmallStat(
+                          icon: Icons.arrow_upward,
+                          label: 'Income',
+                          value: '\$${totalIncome.toStringAsFixed(2)}',
+                          iconColor: Colors.greenAccent,
+                        ),
+                        _SmallStat(
+                          icon: Icons.arrow_downward,
+                          label: 'Expenses',
+                          value: '\$${totalExpenses.toStringAsFixed(2)}',
+                          iconColor: Colors.redAccent,
+                        ),
                       ],
                     ),
                   ],
@@ -98,7 +149,10 @@ class HomeScreen extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: const [
-                  Text('Transactions', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
+                  Text(
+                    'Transactions',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                  ),
                   Text('View All', style: TextStyle(color: Colors.grey)),
                 ],
               ),
@@ -113,13 +167,28 @@ class HomeScreen extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(14),
-                      boxShadow: const [BoxShadow(color: Color.fromRGBO(0,0,0,0.04), blurRadius: 8, offset: Offset(0,4))],
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color.fromRGBO(0, 0, 0, 0.04),
+                          blurRadius: 8,
+                          offset: Offset(0, 4),
+                        ),
+                      ],
                     ),
                     child: ListTile(
-                      leading: CircleAvatar(backgroundColor: mapping['color'] as Color, child: Icon(mapping['icon'] as IconData, color: Colors.white)),
+                      leading: CircleAvatar(
+                        backgroundColor: mapping['color'] as Color,
+                        child: Icon(
+                          mapping['icon'] as IconData,
+                          color: Colors.white,
+                        ),
+                      ),
                       title: Text(e.category),
                       subtitle: const Text('Today'),
-                      trailing: Text('-\$${e.amount.toStringAsFixed(2)}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                      trailing: Text(
+                        '-\$${e.amount.toStringAsFixed(2)}',
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
                     ),
                   );
                 }).toList(),
@@ -154,7 +223,14 @@ class _SmallStat extends StatelessWidget {
   final IconData? icon;
   final String label;
   final String value;
-  const _SmallStat({this.icon, required this.label, required this.value});
+  final Color iconColor;
+
+  const _SmallStat({
+    this.icon,
+    required this.label,
+    required this.value,
+    this.iconColor = Colors.white,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -164,16 +240,28 @@ class _SmallStat extends StatelessWidget {
           Container(
             width: 36,
             height: 36,
-            decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(12)),
-            child: Icon(icon, color: Colors.white, size: 18),
+            decoration: BoxDecoration(
+              color: Colors.white24,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: iconColor, size: 18),
           ),
         if (icon != null) const SizedBox(width: 8),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label, style: const TextStyle(color: Colors.white70, fontSize: 12)),
+            Text(
+              label,
+              style: const TextStyle(color: Colors.white70, fontSize: 12),
+            ),
             const SizedBox(height: 6),
-            Text(value, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+            Text(
+              value,
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ],
         ),
       ],
