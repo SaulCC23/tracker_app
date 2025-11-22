@@ -59,7 +59,7 @@ class HomeScreen extends StatelessWidget {
                         ),
                         SizedBox(height: 4),
                         Text(
-                          'John Doe',
+                          'Saul Cetina',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,

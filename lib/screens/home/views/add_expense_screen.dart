@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:tracker_app/models/expense.dart';
+import 'package:tracker_app/screens/home/views/add_category_dialog.dart';
 
 class AddExpenseScreen extends StatefulWidget {
   const AddExpenseScreen({super.key});
@@ -47,6 +48,15 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
 
   // true = Cargo (expense), false = Abono (income)
   bool _isExpense = true;
+
+  final Map<String, Map<String, dynamic>> _customCategories = {};
+
+  Map<String, dynamic> _getCategoryMeta(String category) {
+    if (_customCategories.containsKey(category)) {
+      return _customCategories[category]!;
+    }
+    return _categoryMeta(category);
+  }
 
   @override
   void initState() {
@@ -96,10 +106,29 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     });
   }
 
+  Future<void> _showAddCategoryDialog() async {
+    final result = await showDialog<Map<String, dynamic>>(
+      context: context,
+      builder: (ctx) => const AddCategoryDialog(),
+    );
+
+    if (result != null) {
+      setState(() {
+        final name = result['name'] as String;
+        _categories.add(name);
+        _customCategories[name] = {
+          'icon': result['icon'],
+          'color': result['color'],
+        };
+        _selectedCategory = name;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final mq = MediaQuery.of(context).size;
-    final _selectedMeta = _categoryMeta(_selectedCategory ?? 'Other');
+    final _selectedMeta = _getCategoryMeta(_selectedCategory ?? 'Other');
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: Container(
@@ -222,61 +251,81 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                   child: Column(
                     children: [
                       // Category dropdown
-                      Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        child: Row(
-                          children: [
-                            CircleAvatar(
-                              radius: 18,
-                              backgroundColor: _selectedMeta['color'] as Color,
-                              child: Icon(
-                                _selectedMeta['icon'] as IconData,
+                      // Category dropdown
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Container(
+                              decoration: BoxDecoration(
                                 color: Colors.white,
-                                size: 18,
+                                borderRadius: BorderRadius.circular(12),
                               ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: DropdownButtonFormField<String>(
-                                value: _selectedCategory,
-                                items: _categories.map((c) {
-                                  final meta = _categoryMeta(c);
-                                  return DropdownMenuItem(
-                                    value: c,
-                                    child: Row(
-                                      children: [
-                                        CircleAvatar(
-                                          radius: 14,
-                                          backgroundColor:
-                                              meta['color'] as Color,
-                                          child: Icon(
-                                            meta['icon'] as IconData,
-                                            color: Colors.white,
-                                            size: 14,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 10),
-                                        Text(c),
-                                      ],
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 6,
+                              ),
+                              child: Row(
+                                children: [
+                                  CircleAvatar(
+                                    radius: 18,
+                                    backgroundColor:
+                                        _selectedMeta['color'] as Color,
+                                    child: Icon(
+                                      _selectedMeta['icon'] as IconData,
+                                      color: Colors.white,
+                                      size: 18,
                                     ),
-                                  );
-                                }).toList(),
-                                onChanged: (v) =>
-                                    setState(() => _selectedCategory = v),
-                                decoration: const InputDecoration(
-                                  border: InputBorder.none,
-                                ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: DropdownButtonFormField<String>(
+                                      value: _selectedCategory,
+                                      items: _categories.map((c) {
+                                        final meta = _getCategoryMeta(c);
+                                        return DropdownMenuItem(
+                                          value: c,
+                                          child: Row(
+                                            children: [
+                                              CircleAvatar(
+                                                radius: 14,
+                                                backgroundColor:
+                                                    meta['color'] as Color,
+                                                child: Icon(
+                                                  meta['icon'] as IconData,
+                                                  color: Colors.white,
+                                                  size: 14,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 10),
+                                              Text(c),
+                                            ],
+                                          ),
+                                        );
+                                      }).toList(),
+                                      onChanged: (v) =>
+                                          setState(() => _selectedCategory = v),
+                                      decoration: const InputDecoration(
+                                        border: InputBorder.none,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                          ],
-                        ),
+                          ),
+                          const SizedBox(width: 8),
+                          Container(
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: IconButton(
+                              onPressed: _showAddCategoryDialog,
+                              icon: const Icon(Icons.add),
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 12),
 

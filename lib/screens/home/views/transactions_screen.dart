@@ -6,7 +6,11 @@ class TransactionsScreen extends StatefulWidget {
   final List<Expense> incomes;
   final List<Expense> expenses;
 
-  const TransactionsScreen({super.key, this.incomes = const [], this.expenses = const []});
+  const TransactionsScreen({
+    super.key,
+    this.incomes = const [],
+    this.expenses = const [],
+  });
 
   @override
   State<TransactionsScreen> createState() => _TransactionsScreenState();
@@ -28,9 +32,23 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
     // Build a simple transaction list for the list view (no dates stored currently)
     final List<_Tx> txList = [
       // incomes as positive
-      ...incomes.map((e) => _Tx(title: e.category, amount: e.amount, date: 'Today', category: e.category)),
+      ...incomes.map(
+        (e) => _Tx(
+          title: e.category,
+          amount: e.amount,
+          date: 'Today',
+          category: e.category,
+        ),
+      ),
       // expenses as negative amounts
-      ...expenses.map((e) => _Tx(title: e.category, amount: -e.amount, date: 'Today', category: e.category)),
+      ...expenses.map(
+        (e) => _Tx(
+          title: e.category,
+          amount: -e.amount,
+          date: 'Today',
+          category: e.category,
+        ),
+      ),
     ];
 
     return Scaffold(
@@ -45,10 +63,16 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text('Transactions', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                  const Text(
+                    'Transactions',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
                   Container(
                     padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10)),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                     child: const Icon(Icons.tune, size: 18),
                   ),
                 ],
@@ -58,34 +82,85 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
               // Segmented control (Income / Expenses)
               Container(
                 padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 child: Row(
                   children: [
                     Expanded(
                       child: GestureDetector(
                         onTap: () => setState(() => _selectedSegment = 0),
-                        child: Container(
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
                           padding: const EdgeInsets.symmetric(vertical: 10),
                           decoration: BoxDecoration(
-                            color: _selectedSegment == 0 ? Colors.white : Colors.transparent,
+                            gradient: _selectedSegment == 0
+                                ? const LinearGradient(
+                                    colors: [
+                                      Color(0xFF00B2E7),
+                                      Color(0xFFE064F7),
+                                    ],
+                                  )
+                                : const LinearGradient(
+                                    colors: [
+                                      Colors.transparent,
+                                      Colors.transparent,
+                                    ],
+                                  ),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: Center(child: Text('Income', style: TextStyle(color: _selectedSegment == 0 ? Colors.black : Colors.grey))),
+                          child: Center(
+                            child: AnimatedDefaultTextStyle(
+                              duration: const Duration(milliseconds: 300),
+                              style: TextStyle(
+                                color: _selectedSegment == 0
+                                    ? Colors.white
+                                    : Colors.grey,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              child: const Text('Income'),
+                            ),
+                          ),
                         ),
                       ),
                     ),
                     Expanded(
                       child: GestureDetector(
                         onTap: () => setState(() => _selectedSegment = 1),
-                        child: Container(
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeInOut,
                           padding: const EdgeInsets.symmetric(vertical: 10),
                           decoration: BoxDecoration(
                             gradient: _selectedSegment == 1
-                                ? const LinearGradient(colors: [Color(0xFF00B2E7), Color(0xFFE064F7)])
-                                : null,
+                                ? const LinearGradient(
+                                    colors: [
+                                      Color(0xFF00B2E7),
+                                      Color(0xFFE064F7),
+                                    ],
+                                  )
+                                : const LinearGradient(
+                                    colors: [
+                                      Colors.transparent,
+                                      Colors.transparent,
+                                    ],
+                                  ),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: Center(child: Text('Expenses', style: TextStyle(color: _selectedSegment == 1 ? Colors.white : Colors.grey))),
+                          child: Center(
+                            child: AnimatedDefaultTextStyle(
+                              duration: const Duration(milliseconds: 300),
+                              style: TextStyle(
+                                color: _selectedSegment == 1
+                                    ? Colors.white
+                                    : Colors.grey,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              child: const Text('Expenses'),
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -99,15 +174,31 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14)),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                ),
                 child: Column(
                   children: [
-                    Text('01 Jan 2021 - 01 April 2021', style: TextStyle(color: Colors.grey[600])),
+                    Text(
+                      '01 Jan 2021 - 01 April 2021',
+                      style: TextStyle(color: Colors.grey[600]),
+                    ),
                     const SizedBox(height: 8),
-                    Text(( _selectedSegment == 0 ? '\$' : '\$') + totalAmount.toStringAsFixed(2), style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                    Text(
+                      (_selectedSegment == 0 ? '\$' : '\$') +
+                          totalAmount.toStringAsFixed(2),
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     const SizedBox(height: 12),
                     // thinner chart area
-                    SizedBox(height: 110, child: ExpenseChart(expenses: shownList)),
+                    SizedBox(
+                      height: 110,
+                      child: ExpenseChart(expenses: shownList),
+                    ),
                   ],
                 ),
               ),
@@ -137,12 +228,28 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
     final meta = _categoryMeta(tx.category);
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: ListTile(
-        leading: CircleAvatar(backgroundColor: meta['color'] as Color, child: Icon(meta['icon'] as IconData, color: Colors.white)),
-        title: Text(tx.title, style: const TextStyle(fontWeight: FontWeight.w600)),
+        leading: CircleAvatar(
+          backgroundColor: meta['color'] as Color,
+          child: Icon(meta['icon'] as IconData, color: Colors.white),
+        ),
+        title: Text(
+          tx.title,
+          style: const TextStyle(fontWeight: FontWeight.w600),
+        ),
         subtitle: Text(tx.date, style: const TextStyle(color: Colors.grey)),
-        trailing: Text((tx.amount < 0 ? '-' : '+') + '\$${tx.amount.abs().toStringAsFixed(0)}', style: TextStyle(color: tx.amount < 0 ? Colors.red : Colors.green, fontWeight: FontWeight.bold)),
+        trailing: Text(
+          (tx.amount < 0 ? '-' : '+') +
+              '\$${tx.amount.abs().toStringAsFixed(0)}',
+          style: TextStyle(
+            color: tx.amount < 0 ? Colors.red : Colors.green,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ),
     );
   }
@@ -154,7 +261,12 @@ class _Tx {
   final String date;
   final String category;
 
-  const _Tx({required this.title, required this.amount, required this.date, required this.category});
+  const _Tx({
+    required this.title,
+    required this.amount,
+    required this.date,
+    required this.category,
+  });
 }
 
 Map<String, Object> _categoryMeta(String category) {
@@ -174,5 +286,3 @@ Map<String, Object> _categoryMeta(String category) {
       return {'icon': Icons.receipt_long, 'color': Colors.grey};
   }
 }
-
-
