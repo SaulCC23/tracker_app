@@ -5,11 +5,13 @@ import 'package:tracker_app/widgets/expense_chart.dart';
 class TransactionsScreen extends StatefulWidget {
   final List<Expense> incomes;
   final List<Expense> expenses;
+  final List<Map<String, dynamic>> customCategories;
 
   const TransactionsScreen({
     super.key,
     this.incomes = const [],
     this.expenses = const [],
+    this.customCategories = const [],
   });
 
   @override
@@ -225,7 +227,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
   }
 
   Widget _txCard(_Tx tx, BuildContext context) {
-    final meta = _categoryMeta(tx.category);
+    final meta = _getCategoryMeta(tx.category);
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -253,6 +255,36 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
       ),
     );
   }
+
+  Map<String, dynamic> _getCategoryMeta(String category) {
+    // Check custom categories first
+    for (var c in widget.customCategories) {
+      if (c['name'] == category) {
+        return {'icon': c['icon'], 'color': c['color']};
+      }
+    }
+
+    switch (category.toLowerCase()) {
+      case 'food':
+      case 'comida':
+        return {'icon': Icons.restaurant, 'color': const Color(0xFFFFB74D)};
+      case 'transport':
+      case 'transporte':
+        return {'icon': Icons.directions_car, 'color': const Color(0xFF4DB6AC)};
+      case 'shopping':
+      case 'ropa':
+        return {'icon': Icons.shopping_bag, 'color': const Color(0xFF9575CD)};
+      case 'bills':
+        return {'icon': Icons.receipt_long, 'color': const Color(0xFF90A4AE)};
+      case 'salary':
+        return {
+          'icon': Icons.monetization_on,
+          'color': const Color(0xFF81C784),
+        };
+      default:
+        return {'icon': Icons.attach_money, 'color': Colors.grey};
+    }
+  }
 }
 
 class _Tx {
@@ -267,22 +299,4 @@ class _Tx {
     required this.date,
     required this.category,
   });
-}
-
-Map<String, Object> _categoryMeta(String category) {
-  switch (category.toLowerCase()) {
-    case 'housing':
-    case 'home rent':
-      return {'icon': Icons.home, 'color': const Color(0xFFFFB74D)};
-    case 'pet':
-    case 'pet groom':
-      return {'icon': Icons.pets, 'color': const Color(0xFF42A5F5)};
-    case 'utilities':
-    case 'recharge':
-      return {'icon': Icons.phone_iphone, 'color': const Color(0xFF66BB6A)};
-    case 'income':
-      return {'icon': Icons.attach_money, 'color': const Color(0xFF00B2E7)};
-    default:
-      return {'icon': Icons.receipt_long, 'color': Colors.grey};
-  }
 }

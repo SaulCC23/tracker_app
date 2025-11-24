@@ -4,26 +4,19 @@ import 'package:tracker_app/models/expense.dart';
 class HomeScreen extends StatelessWidget {
   final List<Expense> incomes;
   final List<Expense> expenses;
+  final List<Map<String, dynamic>> customCategories;
 
   const HomeScreen({
     super.key,
     this.incomes = const [],
     this.expenses = const [],
+    this.customCategories = const [],
   });
 
   @override
   Widget build(BuildContext context) {
-    final sampleExpenses = expenses.isNotEmpty
-        ? expenses
-        : [
-            Expense(category: "Comida", amount: 120),
-            Expense(category: "Ropa", amount: 300),
-            Expense(category: "Transporte", amount: 80),
-          ];
-
-    final sampleIncomes = incomes.isNotEmpty
-        ? incomes
-        : [Expense(category: 'Salary', amount: 2500)];
+    final sampleExpenses = expenses;
+    final sampleIncomes = incomes;
 
     final totalIncome = sampleIncomes.fold<double>(0, (s, e) => s + e.amount);
     final totalExpenses = sampleExpenses.fold<double>(
@@ -161,7 +154,7 @@ class HomeScreen extends StatelessWidget {
               // Transactions list as cards
               Column(
                 children: sampleExpenses.map((e) {
-                  final mapping = _categoryMeta(e.category);
+                  final mapping = _getCategoryMeta(e.category);
                   return Container(
                     margin: const EdgeInsets.only(bottom: 12),
                     decoration: BoxDecoration(
@@ -201,21 +194,28 @@ class HomeScreen extends StatelessWidget {
       ),
     );
   }
-}
 
-Map<String, Object> _categoryMeta(String category) {
-  switch (category.toLowerCase()) {
-    case 'comida':
-    case 'food':
-      return {'icon': Icons.restaurant, 'color': const Color(0xFFFFB74D)};
-    case 'ropa':
-    case 'shopping':
-      return {'icon': Icons.shopping_bag, 'color': const Color(0xFF9575CD)};
-    case 'transporte':
-    case 'travel':
-      return {'icon': Icons.flight, 'color': const Color(0xFF4DB6AC)};
-    default:
-      return {'icon': Icons.attach_money, 'color': Colors.grey};
+  Map<String, dynamic> _getCategoryMeta(String category) {
+    // Check custom categories first
+    for (var c in customCategories) {
+      if (c['name'] == category) {
+        return {'icon': c['icon'], 'color': c['color']};
+      }
+    }
+
+    switch (category.toLowerCase()) {
+      case 'comida':
+      case 'food':
+        return {'icon': Icons.restaurant, 'color': const Color(0xFFFFB74D)};
+      case 'ropa':
+      case 'shopping':
+        return {'icon': Icons.shopping_bag, 'color': const Color(0xFF9575CD)};
+      case 'transporte':
+      case 'travel':
+        return {'icon': Icons.flight, 'color': const Color(0xFF4DB6AC)};
+      default:
+        return {'icon': Icons.attach_money, 'color': Colors.grey};
+    }
   }
 }
 

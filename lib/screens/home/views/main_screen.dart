@@ -3,6 +3,7 @@ import 'home_screen.dart';
 import 'add_expense_screen.dart';
 import 'transactions_screen.dart';
 import 'package:tracker_app/models/expense.dart';
+import 'package:tracker_app/services/storage_service.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -15,12 +16,40 @@ class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
   bool _isFabHovered = false;
 
-  final List<Expense> _incomes = [];
-  final List<Expense> _expenses = [];
+  final StorageService _storageService = StorageService();
+  List<Expense> _incomes = [];
+  List<Expense> _expenses = [];
+  List<Map<String, dynamic>> _customCategories = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    final expenses = await _storageService.loadExpenses();
+    final incomes = await _storageService.loadIncomes();
+    final categories = await _storageService.loadCategories();
+
+    setState(() {
+      _expenses = expenses;
+      _incomes = incomes;
+      _customCategories = categories;
+    });
+  }
 
   List<Widget> get _screens => [
-    HomeScreen(incomes: _incomes, expenses: _expenses),
-    TransactionsScreen(incomes: _incomes, expenses: _expenses),
+    HomeScreen(
+      incomes: _incomes,
+      expenses: _expenses,
+      customCategories: _customCategories,
+    ),
+    TransactionsScreen(
+      incomes: _incomes,
+      expenses: _expenses,
+      customCategories: _customCategories,
+    ),
   ];
 
   @override
@@ -40,18 +69,36 @@ class _MainScreenState extends State<MainScreen> {
             context: context,
             isScrollControlled: true,
             backgroundColor: Colors.transparent,
-            builder: (ctx) => const AddExpenseScreen(),
+            builder: (ctx) =>
+                AddExpenseScreen(availableCategories: _customCategories),
           );
 
           if (result != null && result is Map) {
+            // Handle new category creation if passed back
+            if (result.containsKey('newCategory')) {
+              final newCat = result['newCategory'] as Map<String, dynamic>;
+              // Check if category with same name exists
+              final exists = _customCategories.any(
+                (c) => c['name'] == newCat['name'],
+              );
+              if (!exists) {
+                setState(() {
+                  _customCategories.add(newCat);
+                });
+                _storageService.saveCategories(_customCategories);
+              }
+            }
+
             final Expense? e = result['expense'] as Expense?;
             final bool isExpense = result['isExpense'] as bool? ?? true;
             if (e != null) {
               setState(() {
                 if (isExpense) {
                   _expenses.add(e);
+                  _storageService.saveExpenses(_expenses);
                 } else {
                   _incomes.add(e);
+                  _storageService.saveIncomes(_incomes);
                 }
               });
               ScaffoldMessenger.of(context).showSnackBar(

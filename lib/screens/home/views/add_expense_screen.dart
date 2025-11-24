@@ -4,7 +4,9 @@ import 'package:tracker_app/models/expense.dart';
 import 'package:tracker_app/screens/home/views/add_category_dialog.dart';
 
 class AddExpenseScreen extends StatefulWidget {
-  const AddExpenseScreen({super.key});
+  final List<Map<String, dynamic>> availableCategories;
+
+  const AddExpenseScreen({super.key, this.availableCategories = const []});
 
   @override
   State<AddExpenseScreen> createState() => _AddExpenseScreenState();
@@ -50,6 +52,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   bool _isExpense = true;
 
   final Map<String, Map<String, dynamic>> _customCategories = {};
+  final List<String> _newCategoriesAdded = [];
 
   Map<String, dynamic> _getCategoryMeta(String category) {
     if (_customCategories.containsKey(category)) {
@@ -61,6 +64,15 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
   @override
   void initState() {
     super.initState();
+    if (widget.availableCategories.isNotEmpty) {
+      for (var c in widget.availableCategories) {
+        final name = c['name'] as String;
+        if (!_categories.contains(name)) {
+          _categories.add(name);
+          _customCategories[name] = {'icon': c['icon'], 'color': c['color']};
+        }
+      }
+    }
     _selectedCategory = _categories.first;
   }
 
@@ -98,12 +110,25 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     );
 
     // Return a map containing the Expense and metadata so the caller can decide where to add it.
-    Navigator.of(context).pop({
+    final result = {
       'expense': expense,
       'isExpense': _isExpense,
       'date': _selectedDate,
       'note': _noteController.text,
-    });
+    };
+
+    if (_newCategoriesAdded.isNotEmpty) {
+      if (_newCategoriesAdded.contains(_selectedCategory)) {
+        final meta = _customCategories[_selectedCategory]!;
+        result['newCategory'] = {
+          'name': _selectedCategory,
+          'icon': meta['icon'],
+          'color': meta['color'],
+        };
+      }
+    }
+
+    Navigator.of(context).pop(result);
   }
 
   Future<void> _showAddCategoryDialog() async {
@@ -115,12 +140,15 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
     if (result != null) {
       setState(() {
         final name = result['name'] as String;
-        _categories.add(name);
-        _customCategories[name] = {
-          'icon': result['icon'],
-          'color': result['color'],
-        };
-        _selectedCategory = name;
+        if (!_categories.contains(name)) {
+          _categories.add(name);
+          _customCategories[name] = {
+            'icon': result['icon'],
+            'color': result['color'],
+          };
+          _selectedCategory = name;
+          _newCategoriesAdded.add(name);
+        }
       });
     }
   }
@@ -187,7 +215,7 @@ class _AddExpenseScreenState extends State<AddExpenseScreen> {
                         minWidth: 100,
                         minHeight: 36,
                       ),
-                      children: const [Text('Cargo'), Text('Abono')],
+                      children: const [Text('expenses'), Text('income')],
                     ),
                   ),
                   const SizedBox(height: 12),
