@@ -24,6 +24,11 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
 
   // Local UI state
 
+  String _formatDate(DateTime? date) {
+    if (date == null) return 'Unknown';
+    return '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+  }
+
   @override
   Widget build(BuildContext context) {
     final expenses = widget.expenses;
@@ -31,14 +36,14 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
     final shownList = _selectedSegment == 0 ? incomes : expenses;
     final totalAmount = shownList.fold<double>(0, (s, e) => s + e.amount);
 
-    // Build a simple transaction list for the list view (no dates stored currently)
+    // Build a simple transaction list for the list view
     final List<_Tx> txList = [
       // incomes as positive
       ...incomes.map(
         (e) => _Tx(
           title: e.category,
           amount: e.amount,
-          date: 'Today',
+          date: _formatDate(e.date),
           category: e.category,
         ),
       ),
@@ -47,7 +52,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
         (e) => _Tx(
           title: e.category,
           amount: -e.amount,
-          date: 'Today',
+          date: _formatDate(e.date),
           category: e.category,
         ),
       ),

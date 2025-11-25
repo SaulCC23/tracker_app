@@ -17,185 +17,189 @@ class _MainScreenState extends State<MainScreen> {
   bool _isFabHovered = false;
 
   final StorageService _storageService = StorageService();
-  List<Expense> _incomes = [];
-  List<Expense> _expenses = [];
-  List<Map<String, dynamic>> _customCategories = [];
-
-  @override
-  void initState() {
-    super.initState();
-    _loadData();
-  }
-
-  Future<void> _loadData() async {
-    final expenses = await _storageService.loadExpenses();
-    final incomes = await _storageService.loadIncomes();
-    final categories = await _storageService.loadCategories();
-
-    setState(() {
-      _expenses = expenses;
-      _incomes = incomes;
-      _customCategories = categories;
-    });
-  }
-
-  List<Widget> get _screens => [
-    HomeScreen(
-      incomes: _incomes,
-      expenses: _expenses,
-      customCategories: _customCategories,
-    ),
-    TransactionsScreen(
-      incomes: _incomes,
-      expenses: _expenses,
-      customCategories: _customCategories,
-    ),
-  ];
 
   @override
   Widget build(BuildContext context) {
     // Color vibrante acorde al gradiente del FAB (Purple)
     final navColor = const Color(0xFFE064F7);
 
-    return Scaffold(
-      extendBody: true,
-      body: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 350),
-        child: _screens[_currentIndex],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          final result = await showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            backgroundColor: Colors.transparent,
-            builder: (ctx) =>
-                AddExpenseScreen(availableCategories: _customCategories),
-          );
+    return StreamBuilder<List<Map<String, dynamic>>>(
+      stream: _storageService.getCategoriesStream(),
+      builder: (context, categoriesSnapshot) {
+        final categories = categoriesSnapshot.data ?? [];
 
-          if (result != null && result is Map) {
-            // Handle new category creation if passed back
-            if (result.containsKey('newCategory')) {
-              final newCat = result['newCategory'] as Map<String, dynamic>;
-              // Check if category with same name exists
-              final exists = _customCategories.any(
-                (c) => c['name'] == newCat['name'],
-              );
-              if (!exists) {
-                setState(() {
-                  _customCategories.add(newCat);
-                });
-                _storageService.saveCategories(_customCategories);
-              }
-            }
+        return StreamBuilder<List<Expense>>(
+          stream: _storageService.getExpensesStream(),
+          builder: (context, expensesSnapshot) {
+            final expenses = expensesSnapshot.data ?? [];
 
-            final Expense? e = result['expense'] as Expense?;
-            final bool isExpense = result['isExpense'] as bool? ?? true;
-            if (e != null) {
-              setState(() {
-                if (isExpense) {
-                  _expenses.add(e);
-                  _storageService.saveExpenses(_expenses);
-                } else {
-                  _incomes.add(e);
-                  _storageService.saveIncomes(_incomes);
-                }
-              });
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    '${isExpense ? 'Cargo' : 'Abono'} saved: ${e.category} \$${e.amount.toStringAsFixed(2)}',
+            return StreamBuilder<List<Expense>>(
+              stream: _storageService.getIncomesStream(),
+              builder: (context, incomesSnapshot) {
+                final incomes = incomesSnapshot.data ?? [];
+
+                final screens = [
+                  HomeScreen(
+                    incomes: incomes,
+                    expenses: expenses,
+                    customCategories: categories,
                   ),
-                ),
-              );
-            }
-          }
-        },
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        hoverElevation: 0,
-        focusElevation: 0,
-        highlightElevation: 0,
-        hoverColor: Colors.transparent,
-        splashColor: Colors.transparent,
-        focusColor: Colors.transparent,
-        child: MouseRegion(
-          onEnter: (_) => setState(() => _isFabHovered = true),
-          onExit: (_) => setState(() => _isFabHovered = false),
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            transform: Matrix4.identity()..scale(_isFabHovered ? 1.1 : 1.0),
-            transformAlignment: Alignment.center,
-            width: 64,
-            height: 64,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFFE064F7), Color(0xFFFF8D6C)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: _isFabHovered
-                      ? const Color(0xFFE064F7).withOpacity(0.4)
-                      : Colors.black.withOpacity(0.18),
-                  blurRadius: _isFabHovered ? 12 : 10,
-                  offset: _isFabHovered
-                      ? const Offset(0, 8)
-                      : const Offset(0, 6),
-                ),
-              ],
-            ),
-            child: const Icon(Icons.add, color: Colors.white, size: 28),
-          ),
-        ),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: BottomAppBar(
-        shape: const CircularNotchedRectangle(),
-        notchMargin: 8,
-        elevation: 12,
-        color: Colors.white,
-        child: SafeArea(
-          top: false,
-          child: Container(
-            height: 64,
-            child: Row(
-              children: [
-                // Left: Inicio
-                Expanded(
-                  child: InkWell(
-                    onTap: () => setState(() => _currentIndex = 0),
-                    child: _NavItem(
-                      icon: Icons.home,
-                      selected: _currentIndex == 0,
-                      color: navColor,
-                      verticalPadding: 4,
+                  TransactionsScreen(
+                    incomes: incomes,
+                    expenses: expenses,
+                    customCategories: categories,
+                  ),
+                ];
+
+                return Scaffold(
+                  extendBody: true,
+                  body: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 350),
+                    child: screens[_currentIndex],
+                  ),
+                  floatingActionButton: FloatingActionButton(
+                    onPressed: () async {
+                      final result = await showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true,
+                        backgroundColor: Colors.transparent,
+                        builder: (ctx) =>
+                            AddExpenseScreen(availableCategories: categories),
+                      );
+
+                      if (result != null && result is Map) {
+                        // Handle new category creation if passed back
+                        if (result.containsKey('newCategory')) {
+                          final newCat =
+                              result['newCategory'] as Map<String, dynamic>;
+                          // Check if category with same name exists
+                          final exists = categories.any(
+                            (c) => c['name'] == newCat['name'],
+                          );
+                          if (!exists) {
+                            _storageService.addCategory(newCat);
+                          }
+                        }
+
+                        final Expense? e = result['expense'] as Expense?;
+                        final bool isExpense =
+                            result['isExpense'] as bool? ?? true;
+                        if (e != null) {
+                          if (isExpense) {
+                            _storageService.addExpense(e);
+                          } else {
+                            _storageService.addIncome(e);
+                          }
+
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  '${isExpense ? 'Cargo' : 'Abono'} saved: ${e.category} \$${e.amount.toStringAsFixed(2)}',
+                                ),
+                              ),
+                            );
+                          }
+                        }
+                      }
+                    },
+                    backgroundColor: Colors.transparent,
+                    elevation: 0,
+                    hoverElevation: 0,
+                    focusElevation: 0,
+                    highlightElevation: 0,
+                    hoverColor: Colors.transparent,
+                    splashColor: Colors.transparent,
+                    focusColor: Colors.transparent,
+                    child: MouseRegion(
+                      onEnter: (_) => setState(() => _isFabHovered = true),
+                      onExit: (_) => setState(() => _isFabHovered = false),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 200),
+                        transform: Matrix4.identity()
+                          ..scale(_isFabHovered ? 1.1 : 1.0),
+                        transformAlignment: Alignment.center,
+                        width: 64,
+                        height: 64,
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFFE064F7), Color(0xFFFF8D6C)],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: _isFabHovered
+                                  ? const Color(0xFFE064F7).withOpacity(0.4)
+                                  : Colors.black.withOpacity(0.18),
+                              blurRadius: _isFabHovered ? 12 : 10,
+                              offset: _isFabHovered
+                                  ? const Offset(0, 8)
+                                  : const Offset(0, 6),
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.add,
+                          color: Colors.white,
+                          size: 28,
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                  floatingActionButtonLocation:
+                      FloatingActionButtonLocation.centerDocked,
+                  bottomNavigationBar: BottomAppBar(
+                    shape: const CircularNotchedRectangle(),
+                    notchMargin: 8,
+                    elevation: 12,
+                    color: Colors.white,
+                    child: SafeArea(
+                      top: false,
+                      child: Container(
+                        height: 64,
+                        child: Row(
+                          children: [
+                            // Left: Inicio
+                            Expanded(
+                              child: InkWell(
+                                onTap: () => setState(() => _currentIndex = 0),
+                                child: _NavItem(
+                                  icon: Icons.home,
+                                  selected: _currentIndex == 0,
+                                  color: navColor,
+                                  verticalPadding: 4,
+                                ),
+                              ),
+                            ),
 
-                // Spacer for FAB
-                const SizedBox(width: 72),
+                            // Spacer for FAB
+                            const SizedBox(width: 72),
 
-                // Right: Apps (shows Transactions)
-                Expanded(
-                  child: InkWell(
-                    onTap: () => setState(() => _currentIndex = 1),
-                    child: _NavItem(
-                      icon: Icons.show_chart,
-                      selected: _currentIndex == 1,
-                      color: navColor,
-                      verticalPadding: 4,
+                            // Right: Apps (shows Transactions)
+                            Expanded(
+                              child: InkWell(
+                                onTap: () => setState(() => _currentIndex = 1),
+                                child: _NavItem(
+                                  icon: Icons.show_chart,
+                                  selected: _currentIndex == 1,
+                                  color: navColor,
+                                  verticalPadding: 4,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+                );
+              },
+            );
+          },
+        );
+      },
     );
   }
 }
