@@ -26,15 +26,6 @@ Welcome to **Tracker App**, a sleek and intuitive mobile application designed to
   - Stunning gradients (featuring our signature **Purple** & **Orange** blend).
 - **📈 Visual Insights:** View your transaction history clearly (Charts coming soon!).
 
-## 📱 Screenshots
-
-|                           Home Screen                           |                        Add Transaction                        |                                History                                |
-| :-------------------------------------------------------------: | :-----------------------------------------------------------: | :-------------------------------------------------------------------: |
-| <img src="assets/screenshots/home.png" alt="Home" width="250"/> | <img src="assets/screenshots/add.png" alt="Add" width="250"/> | <img src="assets/screenshots/history.png" alt="History" width="250"/> |
-
-> _Note: Screenshots are placeholders. Add your actual app screenshots in an `assets/screenshots` folder!_
-
-## 🛠️ Tech Stack
 
 - **Frontend:** [Flutter](https://flutter.dev/) (Dart)
 - **Backend:** [Firebase](https://firebase.google.com/) (Firestore)
@@ -93,5 +84,5 @@ Distributed under the MIT License. See `LICENSE` for more information.
 ---
 
 <div align="center">
-  <p>Made with 💜 by <a href="https://github.com/your_username">You</a></p>
+  <p>Made with  by <a href="https://github.com/SaulCC23">SaulCC💜</a></p>
 </div>
