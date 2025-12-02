@@ -1,6 +1,6 @@
 name: tracker_app
 description: "A new Flutter project."
-publish_to: 'none'
+publish_to: "none"
 
 version: 1.0.0+1
 
@@ -15,7 +15,6 @@ dependencies:
   shared_preferences: ^2.5.3
   firebase_core: ^4.2.1
   cloud_firestore: ^6.1.0
-
 
 dev_dependencies:
   flutter_test:

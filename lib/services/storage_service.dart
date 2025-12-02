@@ -6,7 +6,6 @@ class StorageService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   // Base reference to user data
-  // Using a fixed user ID for now as per plan
   DocumentReference get _userDoc =>
       _firestore.collection('data').doc('user_data');
 
